@@ -17,7 +17,13 @@ A command-line tool to authenticate with Discord via OAuth2 + PKCE, then interac
   - Include threads (None/Active/All)
   - Download media attachments
   - Multiple export formats: JSON, HTML (Dark/Light), CSV, Plain Text
-- Analyze exported data (disabled until exports are available)
+- **Analyze exported data** - AI-powered analysis using Google Gemini:
+  - **HTML Parser**: Extracts messages, timestamps, authors, attachments, and reactions from Discord HTML exports
+  - **Media Analysis**: Analyzes images, videos, and audio files for metadata and content
+  - **AI-Powered Analysis**: Uses Google Gemini AI for sentiment analysis, topic extraction, and relationship dynamics
+  - **Participant Profiling**: Creates detailed individual profiles with personality traits, likes/dislikes, communication styles, and interests
+  - **Visualizations**: Creates charts, graphs, and interactive dashboards including participant profile radar charts and interest word clouds
+  - **Privacy-Focused**: Optional anonymization and sensitive content removal
 - Logout & clear tokens
 
 ---
@@ -37,6 +43,8 @@ python -m playwright install
 
 http://127.0.0.1:53682/callback
 ```
+
+- **For Analysis Features**: [Google Gemini API key](https://makersuite.google.com/app/apikey) (free tier available)
 
 ---
 
@@ -63,6 +71,7 @@ CLIENT_ID=your_discord_app_client_id
 REDIRECT_URI=http://127.0.0.1:53682/callback
 ROOT=https://discord.com/api/
 SCOPES=identify guilds
+GEMINI_API_KEY=your_gemini_api_key_here  # Optional: for analysis features
 ```
 
 ### 4. Run the application
@@ -100,6 +109,17 @@ The app provides an interactive menu with the following options:
    - Optional media download
    - Optional thread inclusion (None/Active/All)
 4. **Analyze** → Analyze exported data (only enabled when exports exist in `exports/` directory)
+   - Select an HTML export file to analyze
+   - Enter your Google Gemini API key (or set GEMINI_API_KEY environment variable)
+   - Choose whether to generate visualizations
+   - Features include:
+     - AI-powered sentiment analysis
+     - Topic extraction and categorization
+     - Participant profiling with personality traits
+     - Communication style analysis
+     - Relationship dynamics insights
+     - Media file analysis (images, videos, audio)
+     - Interactive visualizations and charts
 5. **Logout** → Deletes saved tokens and logs you out
 6. **Exit** → Closes the application
 

@@ -1,5 +1,7 @@
 # commands.py - All CLI commands in one place
 import os, requests, urllib.parse, threading, json, http.server, subprocess
+from datetime import datetime
+from dataclasses import asdict
 from lib.config import DISCORD_TOKEN, DISCORD_ME, DISCORD_GUILDS, DISCORD_CHANNELS, DISCORD_DM_CHANNELS, CONFIG_PATH, EXPORT_DIR
 from lib.storage import read_tokens, write_tokens, now
 from lib.oauth import gen_code_verifier, gen_code_challenge, CodeHandler, find_free_port
@@ -337,6 +339,143 @@ def cmd_export(_):
 
 def cmd_analyze(_):
     """Analyze exported data"""
-    # Placeholder for future implementation
-    print("Analyze functionality coming soon...")
-    pass
+    import os
+    from pathlib import Path
+    from lib.analyzer import DiscordAnalyzer
+    from lib.visualizer import create_visualizations
+    
+    # Check if exports directory exists and has files
+    if not os.path.exists(EXPORT_DIR) or not os.listdir(EXPORT_DIR):
+        print("❌ No exports found. Please export some data first.")
+        return
+    
+    # List available export files
+    export_files = []
+    for root, dirs, files in os.walk(EXPORT_DIR):
+        for file in files:
+            if file.endswith('.html'):
+                export_files.append(os.path.join(root, file))
+    
+    if not export_files:
+        print("❌ No HTML export files found. Please export in HTML format to enable analysis.")
+        return
+    
+    print("\n=== Available HTML Exports ===")
+    for idx, file_path in enumerate(export_files, 1):
+        rel_path = os.path.relpath(file_path, EXPORT_DIR)
+        print(f"{idx}. {rel_path}")
+    
+    # Select file to analyze
+    selection = input(f"\nSelect file to analyze (1-{len(export_files)}): ").strip()
+    try:
+        file_idx = int(selection) - 1
+        if file_idx < 0 or file_idx >= len(export_files):
+            print("❌ Invalid selection.")
+            return
+        selected_file = export_files[file_idx]
+    except ValueError:
+        print("❌ Invalid input.")
+        return
+    
+    # Get files directory (look for a files/ subdirectory or use EXPORT_DIR)
+    html_dir = os.path.dirname(selected_file)
+    files_dir = os.path.join(html_dir, 'files')
+    if not os.path.exists(files_dir):
+        files_dir = html_dir
+    
+    # Check for Gemini API key
+    gemini_api_key = os.environ.get('GEMINI_API_KEY')
+    if not gemini_api_key:
+        gemini_api_key = input("\nEnter your Google Gemini API key (or set GEMINI_API_KEY env var): ").strip()
+        if not gemini_api_key:
+            print("❌ API key is required for analysis.")
+            return
+    
+    # Ask about visualizations
+    create_viz = input("\nGenerate visualizations? (y/N): ").strip().lower() == 'y'
+    
+    # Run analysis
+    try:
+        print(f"\n🔍 Starting analysis of: {os.path.basename(selected_file)}")
+        print(f"📁 Files directory: {files_dir}")
+        
+        # Initialize analyzer
+        analyzer = DiscordAnalyzer(
+            html_file=selected_file,
+            files_directory=files_dir,
+            gemini_api_key=gemini_api_key,
+            model_name='gemini-1.5-flash'
+        )
+        
+        # Run analysis
+        analysis = analyzer.analyze()
+        
+        # Export results
+        output_file = os.path.join(EXPORT_DIR, f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        analyzer.export_results(analysis, output_file)
+        
+        # Print summary
+        print("\n" + "="*60)
+        print("ANALYSIS SUMMARY")
+        print("="*60)
+        print(f"Total messages: {analysis.total_messages}")
+        print(f"Participants: {', '.join(analysis.participants)}")
+        
+        if analysis.date_range[0] and analysis.date_range[1]:
+            print(f"Date range: {analysis.date_range[0]} to {analysis.date_range[1]}")
+        
+        # Sentiment analysis
+        sentiment = analysis.sentiment_analysis
+        if sentiment and 'overall_sentiment' in sentiment:
+            print(f"Overall sentiment: {sentiment['overall_sentiment']}")
+        
+        # Topics
+        if analysis.topics:
+            print(f"Main topics: {', '.join(analysis.topics[:5])}")
+        
+        # Key insights
+        if analysis.key_insights:
+            print(f"\nKey insights ({len(analysis.key_insights)} total):")
+            for i, insight in enumerate(analysis.key_insights[:3], 1):
+                print(f"  {i}. {insight}")
+        
+        # Participant Profiles
+        if hasattr(analysis, 'participant_profiles') and analysis.participant_profiles:
+            print("\n" + "="*60)
+            print("PARTICIPANT PROFILES")
+            print("="*60)
+            
+            for name, profile in analysis.participant_profiles.items():
+                print(f"\n{name.upper()}:")
+                print(f"  Communication Style: {profile.communication_style}")
+                print(f"  Role: {profile.role_in_conversation}")
+                print(f"  Activity Level: {profile.activity_level}")
+                
+                if profile.personality_traits:
+                    print(f"  Personality: {', '.join(profile.personality_traits[:3])}")
+                
+                if profile.likes:
+                    print(f"  Likes: {', '.join(profile.likes[:3])}")
+        
+        print("="*60)
+        print(f"\n✅ Full analysis saved to: {output_file}")
+        
+        # Generate visualizations if requested
+        if create_viz:
+            from datetime import datetime
+            viz_dir = os.path.join(EXPORT_DIR, f"visualizations_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            print(f"\n📊 Generating visualizations in: {viz_dir}")
+            
+            create_visualizations(
+                analysis_data=asdict(analysis),
+                output_directory=viz_dir
+            )
+            print(f"✅ Visualizations saved to: {viz_dir}")
+            print(f"📂 Open {viz_dir}/index.html in your browser to view them")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Analysis interrupted by user")
+    except Exception as e:
+        print(f"❌ Error during analysis: {e}")
+        import traceback
+        traceback.print_exc()
