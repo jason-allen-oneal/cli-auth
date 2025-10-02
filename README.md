@@ -9,7 +9,14 @@ A command-line tool to authenticate with Discord via OAuth2 + PKCE, then interac
 - **Automatic login flow** - Authentication happens automatically when you run the app
 - Show your profile info (`Who am I?`)
 - List your guilds (`List my guilds`)
-- Export a channel with [DiscordChatExporter.Cli](https://github.com/Tyrrrz/DiscordChatExporter)
+- Export Discord data with [DiscordChatExporter.Cli](https://github.com/Tyrrrz/DiscordChatExporter):
+  - Export specific channels by ID
+  - Export all channels from a guild/server (with guild selection)
+  - Export DM channels by ID
+  - Filter by date ranges (--after/--before)
+  - Include threads (None/Active/All)
+  - Download media attachments
+  - Multiple export formats: JSON, HTML (Dark/Light), CSV, Plain Text
 - Analyze exported data (disabled until exports are available)
 - Logout & clear tokens
 
@@ -83,7 +90,15 @@ The app provides an interactive menu with the following options:
 
 1. **Who am I?** → Displays your Discord profile information
 2. **List my guilds** → Shows all guilds (servers) you belong to
-3. **Export** → Exports a Discord channel using `DiscordChatExporter.Cli`
+3. **Export** → Exports Discord data using `DiscordChatExporter.Cli`
+   - Choose from 3 export modes:
+     - Export a specific channel by ID
+     - Export all channels from a guild (with selectable guild list)
+     - Export a DM channel by ID
+   - Select export format (JSON, HTML Dark, HTML Light, CSV, Plain Text)
+   - Optional date range filtering
+   - Optional media download
+   - Optional thread inclusion (None/Active/All)
 4. **Analyze** → Analyze exported data (only enabled when exports exist in `exports/` directory)
 5. **Logout** → Deletes saved tokens and logs you out
 6. **Exit** → Closes the application
