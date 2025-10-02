@@ -1,5 +1,5 @@
 import os, base64, hashlib, socket, urllib.parse, http.server, threading
-from storage import now
+from lib.storage import now
 
 def b64url(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode().rstrip("=")

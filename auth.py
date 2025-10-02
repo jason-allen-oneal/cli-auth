@@ -1,32 +1,25 @@
-import argparse, sys
-from commands import cmd_login, cmd_whoami, cmd_guilds, cmd_logout
-from menu import menu
+import sys
+from lib.commands import perform_authentication, cmd_whoami, cmd_guilds, cmd_logout, cmd_export, cmd_analyze
+from lib.storage import read_tokens
+from lib.util import menu
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Discord CLI Auth")
-    sub = parser.add_subparsers(dest="command")
-
-    sub.add_parser("login")
-    sub.add_parser("whoami")
-    sub.add_parser("guilds")
-    sub.add_parser("logout")
-    sub.add_parser("menu")
-
-    args = parser.parse_args()
-
-    if args.command == "login":
-        cmd_login()
-    elif args.command == "whoami":
-        cmd_whoami(None)
-    elif args.command == "guilds":
-        cmd_guilds(None)
-    elif args.command == "logout":
-        cmd_logout(None)
-    elif args.command == "menu":
-        menu()
+    """
+    Main entry point - automatically handles authentication and shows menu.
+    If not logged in, performs authentication first.
+    """
+    # Check if user is already logged in
+    tok = read_tokens()
+    
+    if not tok:
+        print("You are not logged in. Authenticating...")
+        perform_authentication()
     else:
-        parser.print_help()
+        print(f"Welcome back, {tok.get('discord_user', {}).get('username', 'User')}!")
+    
+    # Show interactive menu
+    menu(cmd_whoami, cmd_guilds, cmd_export, cmd_analyze, cmd_logout)
 
 
 if __name__ == "__main__":

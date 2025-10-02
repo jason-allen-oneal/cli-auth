@@ -1,6 +1,6 @@
 # storage.py
 import os, json, time, requests
-from config import CONFIG_PATH, DISCORD_TOKEN
+from lib.config import CONFIG_PATH, DISCORD_TOKEN
 
 # --- Time helper ---
 def now() -> int:
