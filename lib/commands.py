@@ -1,13 +1,18 @@
-import os, requests, urllib.parse, threading, json, http.server
-from config import DISCORD_TOKEN, DISCORD_ME, DISCORD_GUILDS, CONFIG_PATH
-from storage import read_tokens, write_tokens, now
-from oauth import gen_code_verifier, gen_code_challenge, CodeHandler, find_free_port
-from browser import open_and_capture
+# commands.py - All CLI commands in one place
+import os, requests, urllib.parse, threading, json, http.server, subprocess
+from lib.config import DISCORD_TOKEN, DISCORD_ME, DISCORD_GUILDS, CONFIG_PATH, EXPORT_DIR
+from lib.storage import read_tokens, write_tokens, now
+from lib.oauth import gen_code_verifier, gen_code_challenge, CodeHandler, find_free_port
+from lib.browser import open_and_capture
+
+os.makedirs(EXPORT_DIR, exist_ok=True)
 
 
-def cmd_login():
-    from menu import menu   # ✅ local import, avoids circular import
-
+def perform_authentication():
+    """
+    Perform Discord OAuth2 authentication with PKCE flow.
+    Renamed from cmd_login to reflect its automatic nature.
+    """
     client_id = os.environ["CLIENT_ID"]
     redirect_uri = os.environ["REDIRECT_URI"]
 
@@ -91,11 +96,9 @@ def cmd_login():
     write_tokens(bundle)
     print(f"Logged in as {me.get('username')} ({me.get('id')}). Tokens stored at: {CONFIG_PATH}")
 
-    # ✅ call menu here
-    menu()
-
 
 def cmd_whoami(_):
+    """Display current user information"""
     tok = read_tokens()
     if not tok:
         raise RuntimeError("Not logged in")
@@ -104,6 +107,7 @@ def cmd_whoami(_):
 
 
 def cmd_guilds(_):
+    """List all guilds the user belongs to"""
     tok = read_tokens()
     if not tok:
         raise RuntimeError("Not logged in")
@@ -112,8 +116,80 @@ def cmd_guilds(_):
 
 
 def cmd_logout(_):
+    """Log out and delete stored tokens"""
     if os.path.exists(CONFIG_PATH):
         os.remove(CONFIG_PATH)
         print("Local tokens deleted.")
     else:
         print("Already logged out.")
+
+
+def cmd_export(_):
+    """Export Discord channel data using DiscordChatExporter.Cli"""
+    tok = read_tokens()
+    if not tok:
+        raise RuntimeError("Not logged in")
+
+    # Prompt user for channel ID
+    channel_id = input("Enter the channel ID to export: ").strip()
+
+    # Prompt user for format
+    print("Select export format:")
+    print("1. JSON")
+    print("2. HTML (Dark)")
+    print("3. HTML (Light)")
+    print("4. CSV")
+    fmt_choice = input("Choose (1/2/3/4): ").strip()
+
+    if fmt_choice == "1":
+        fmt = "Json"
+        ext = "json"
+    elif fmt_choice == "2":
+        fmt = "HtmlDark"
+        ext = "htmldark"
+    elif fmt_choice == "3":
+        fmt = "HtmlLight"
+        ext = "htmllight"
+    elif fmt_choice == "4":
+        fmt = "Csv"
+        ext = "csv"
+    else:
+        print("Invalid choice.")
+        return
+
+    # Prompt user about media
+    download_media = input("Download all media attachments? (y/N): ").strip().lower() == "y"
+
+    # Use auth_header if available, else fallback to access_token
+    auth_token = tok.get("auth_header")  # <- use raw user token
+    if not auth_token:
+        raise RuntimeError("No auth_token found. Try logging in again.")
+
+    output_file = os.path.join(EXPORT_DIR, f"export_{channel_id}.{ext}")
+
+    cmd = [
+        "./lib/exporter/DiscordChatExporter.Cli",
+        "export",
+        "--channel", channel_id,
+        "--token", auth_token,
+        "-f", fmt,
+        "-o", output_file
+    ]
+
+    if download_media:
+        cmd.append("--media")
+
+    try:
+        subprocess.run(cmd, check=True)
+        print(f"✅ Export complete: {output_file}")
+        if download_media:
+            print("✅ Media attachments downloaded as well.")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Export failed: {e}")
+
+
+def cmd_analyze(_):
+    """Analyze exported data"""
+    # Placeholder for future implementation
+    print("Analyze functionality coming soon...")
+    pass
