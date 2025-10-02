@@ -42,7 +42,14 @@ git clone https://github.com/yourname/discord-cli-auth.git
 cd discord-cli-auth
 ```
 
-### 2. Create `.env`
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+python -m playwright install
+```
+
+### 3. Create `.env`
 
 ```env
 CLIENT_ID=your_discord_app_client_id
@@ -51,7 +58,7 @@ ROOT=https://discord.com/api/
 SCOPES=identify guilds
 ```
 
-### 3. Run the application
+### 4. Run the application
 
 ```bash
 python auth.py
