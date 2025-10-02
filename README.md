@@ -77,7 +77,7 @@ GEMINI_API_KEY=your_gemini_api_key_here  # Optional: for analysis features
 ### 4. Run the application
 
 ```bash
-python auth.py
+python app.py
 ```
 
 The application will:
@@ -125,9 +125,57 @@ The app provides an interactive menu with the following options:
 
 ---
 
+## 📊 Analysis Features
+
+The analysis feature is powered by Google Gemini AI and provides comprehensive insights into Discord conversations.
+
+### Prerequisites
+
+1. Export your Discord data in **HTML format** (required for analysis)
+2. Get a [Google Gemini API key](https://makersuite.google.com/app/apikey) (free tier available)
+3. Set the `GEMINI_API_KEY` environment variable (optional but recommended)
+
+### What Gets Analyzed
+
+- **Sentiment Analysis**: Overall conversation sentiment and per-participant sentiment
+- **Topic Extraction**: Main topics and themes discussed in the conversation
+- **Participant Profiling**: Detailed profiles for each participant including:
+  - Personality traits
+  - Communication styles
+  - Likes, dislikes, and interests
+  - Important ideas and beliefs
+  - Emotional patterns
+  - Role in conversation dynamics
+  - Activity and influence levels
+- **Relationship Dynamics**: Communication patterns and relationship health
+- **Media Analysis**: Metadata extraction from images, videos, and audio files
+- **Key Insights**: AI-generated insights about the conversation
+
+### Visualizations
+
+When you opt to generate visualizations, the system creates:
+
+- **Message Timeline**: Activity over time
+- **Sentiment Charts**: Sentiment analysis visualizations
+- **Topic Word Cloud**: Visual representation of topics
+- **Participant Profiles**: Individual radar charts showing personality metrics
+- **Participant Interests**: Word clouds of each person's interests and ideas
+- **Media Analysis**: File type distribution charts
+- **Interactive Dashboard**: Comprehensive Plotly dashboard (open `index.html` in browser)
+
+### Output Files
+
+- `analysis_YYYYMMDD_HHMMSS.json`: Complete analysis results in JSON format
+- `visualizations_YYYYMMDD_HHMMSS/`: Directory containing all visualization files
+  - `index.html`: Main page to view all visualizations
+  - Various PNG files for static charts
+  - `interactive_dashboard.html`: Interactive Plotly dashboard
+
+---
+
 ## 📁 Project Structure
 
-- `auth.py` - Main entry point with auto-login flow
+- `app.py` - Main entry point with auto-login flow
 - `lib/` - All library modules
   - `commands.py` - All CLI command implementations
   - `util.py` - Menu and utility functions
@@ -135,8 +183,14 @@ The app provides an interactive menu with the following options:
   - `storage.py` - Token storage and management
   - `oauth.py` - OAuth2 + PKCE implementation
   - `browser.py` - Browser automation for authentication
+  - `parser.py` - Discord HTML export parser
+  - `analyzer.py` - Main analysis orchestrator
+  - `gemini.py` - Gemini AI analyzer with conversation analysis
+  - `wrapper.py` - Gemini API wrapper with retry logic
+  - `media.py` - Media file analyzer (images, videos, audio)
+  - `visualizer.py` - Visualization generation (charts, graphs, dashboards)
   - `exporter/` - DiscordChatExporter.Cli binary
-- `exports/` - Directory for exported channel data
+- `exports/` - Directory for exported channel data and analysis results
 
 ---
 
