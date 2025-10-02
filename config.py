@@ -6,6 +6,7 @@ load_dotenv()
 APP_NAME = "cli-auth"
 CONFIG_DIR = user_config_dir(APP_NAME)
 CONFIG_PATH = os.path.join(CONFIG_DIR, "config.json")
+EXPORT_DIR = "exports"
 
 ROOT = os.environ.get("ROOT", "https://discord.com/api/")
 

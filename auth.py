@@ -1,25 +1,37 @@
-# auth.py
 import argparse, sys
 from commands import cmd_login, cmd_whoami, cmd_guilds, cmd_logout
+from menu import menu
+
 
 def main():
-    p = argparse.ArgumentParser(description="Discord OAuth2 CLI (Authorization Code + PKCE)")
-    sub = p.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("login").set_defaults(func=cmd_login)
-    sub.add_parser("whoami").set_defaults(func=cmd_whoami)
-    sub.add_parser("guilds").set_defaults(func=cmd_guilds)
-    sub.add_parser("logout").set_defaults(func=cmd_logout)
+    parser = argparse.ArgumentParser(description="Discord CLI Auth")
+    sub = parser.add_subparsers(dest="command")
 
-    args = p.parse_args()
+    sub.add_parser("login")
+    sub.add_parser("whoami")
+    sub.add_parser("guilds")
+    sub.add_parser("logout")
+    sub.add_parser("menu")
+
+    args = parser.parse_args()
+
+    if args.command == "login":
+        cmd_login()
+    elif args.command == "whoami":
+        cmd_whoami(None)
+    elif args.command == "guilds":
+        cmd_guilds(None)
+    elif args.command == "logout":
+        cmd_logout(None)
+    elif args.command == "menu":
+        menu()
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
     try:
-        # commands expect no args, so call directly
-        args.func(None) if args.cmd != "login" else args.func()
+        main()
     except KeyboardInterrupt:
         print("\nInterrupted.")
         sys.exit(130)
-    except Exception as e:
-        print("Error:", e, file=sys.stderr)
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
