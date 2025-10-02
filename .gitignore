@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.egg-info/
+*.egg
+*.log
+
+# --- Virtualenv ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- Build / Dist ---
+build/
+dist/
+*.spec
+
+# --- Playwright Cache ---
+/playwright-report/
+/test-results/
+/.playwright-cache/
+/ms-playwright/
+
+# --- Local Config / Secrets ---
+.env
+config.json
+*.secret
+*.bak
+
+# --- Exports ---
+exports/
+*.json
+*.html
+*.csv
+
+# --- Binaries ---
+*.exe
+*.dll
+*.dylib
+*.bin
+
+# --- Misc ---
+*.tmp
+*.swp
